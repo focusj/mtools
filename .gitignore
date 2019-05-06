@@ -28,3 +28,5 @@ pip-log.txt
 
 # Doc build files
 _build
+
+.idea/

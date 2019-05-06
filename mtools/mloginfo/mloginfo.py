@@ -32,7 +32,6 @@ class MLogInfoTool(LogFileTool):
     def run(self, arguments=None):
         """Print useful information about the log file."""
         LogFileTool.run(self, arguments)
-
         for i, self.logfile in enumerate(self.args['logfile']):
             if i > 0:
                 print("\n ------------------------------------------\n")

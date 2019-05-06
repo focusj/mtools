@@ -11,7 +11,7 @@ try:
 except ImportError:
     np = None
 
-LogTuple = namedtuple('LogTuple', ['namespace', 'operation', 'pattern',
+LogTuple = namedtuple('LogTuple', ['namespace', 'operation', 'pattern', 'actual_query',
                                    'duration'])
 
 
@@ -37,6 +37,7 @@ class QuerySection(BaseSection):
                                                           default='sum',
                                                           choices=['namespace',
                                                                    'pattern',
+                                                                   'actual_query',
                                                                    'count',
                                                                    'min',
                                                                    'max',
@@ -73,12 +74,11 @@ class QuerySection(BaseSection):
                          .update_progress(float(progress_curr -
                                                 progress_start) /
                                           progress_total))
-
             if (le.operation in ['query', 'getmore', 'update', 'remove'] or
                     le.command in ['count', 'findandmodify',
                                    'geonear', 'find']):
                 lt = LogTuple(namespace=le.namespace, operation=op_or_cmd(le),
-                              pattern=le.pattern, duration=le.duration)
+                              pattern=le.pattern, duration=le.duration, actual_query=le.actual_query)
                 grouping.add(lt)
 
         grouping.sort_by_size()
@@ -92,21 +92,23 @@ class QuerySection(BaseSection):
             print('no queries found.')
             return
 
-        titles = ['namespace', 'operation', 'pattern', 'count', 'min (ms)',
+        titles = ['namespace', 'operation', 'pattern', 'actual_query', 'count', 'min (ms)',
                   'max (ms)', 'mean (ms)', '95%-ile (ms)', 'sum (ms)']
         table_rows = []
-
         for g in grouping:
             # calculate statistics for this group
             namespace, op, pattern = g
 
             group_events = [le.duration for le in grouping[g]
                             if le.duration is not None]
-
+            actual_queries = [le.actual_query for le in grouping[g]
+                              if le.actual_query is not None]
+            print group_events
             stats = OrderedDict()
             stats['namespace'] = namespace
             stats['operation'] = op
             stats['pattern'] = pattern
+            stats['actual_query'] = actual_queries[0]
             stats['count'] = len(group_events)
             stats['min'] = min(group_events) if group_events else '-'
             stats['max'] = max(group_events) if group_events else '-'
